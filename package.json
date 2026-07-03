@@ -1,0 +1,9 @@
+{
+  "name": "jathagam-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ProKerala API-ஐ பயன்படுத்தும் ஜாதகம் (Vedic horoscope) கணிப்பு வெப் தளம்",
+  "engines": {
+    "node": ">=18"
+  }
+}
