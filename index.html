@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ஜாதகம் — பிறப்பு ஜாதக கணிப்பு</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@500;700&family=Noto+Sans+Tamil:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#171735;
+    --sky-2:#22224a;
+    --panel:#2a2a58;
+    --gold:#cda032;
+    --gold-soft:#e8c96b;
+    --copper:#b5651d;
+    --leaf:#f2ecda;
+    --lavender:#a8a4cf;
+    --line: rgba(205,160,50,0.28);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #26265a 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #2c2c66 0%, transparent 55%),
+      var(--sky);
+    color:var(--leaf);
+    font-family:'Noto Sans Tamil','Noto Sans',sans-serif;
+    min-height:100vh;
+  }
+  .stars{
+    position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.5;
+    background-image:
+      radial-gradient(1.5px 1.5px at 20px 30px, var(--gold-soft), transparent),
+      radial-gradient(1px 1px at 90px 80px, var(--lavender), transparent),
+      radial-gradient(1.5px 1.5px at 160px 40px, var(--gold-soft), transparent),
+      radial-gradient(1px 1px at 210px 120px, var(--lavender), transparent),
+      radial-gradient(1.5px 1.5px at 260px 60px, var(--gold-soft), transparent);
+    background-repeat:repeat; background-size:300px 200px;
+  }
+  header{
+    position:relative; z-index:1;
+    text-align:center; padding:56px 20px 28px;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:0.28em; font-size:12px; color:var(--gold);
+    text-transform:uppercase;
+  }
+  h1{
+    font-family:'Noto Serif Tamil',serif;
+    font-weight:700; font-size:clamp(32px,6vw,52px);
+    margin:10px 0 8px; color:var(--leaf);
+  }
+  header p{ color:var(--lavender); font-size:15px; max-width:520px; margin:0 auto; }
+
+  main{ position:relative; z-index:1; max-width:920px; margin:0 auto; padding:0 20px 80px; }
+
+  .card{
+    background:linear-gradient(180deg, var(--panel), var(--sky-2));
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:32px;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);
+    position:relative;
+  }
+  .card::before{
+    content:""; position:absolute; inset:8px; border:1px solid rgba(205,160,50,0.15);
+    border-radius:2px; pointer-events:none;
+  }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:560px){ .grid{ grid-template-columns:1fr; } }
+  .field{ display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+  label{ font-size:13px; color:var(--gold-soft); font-family:'JetBrains Mono',monospace; letter-spacing:0.03em; }
+  input{
+    background:#1c1c40; border:1px solid var(--line); border-radius:3px;
+    padding:12px 14px; color:var(--leaf); font-size:15px;
+    font-family:'Noto Sans Tamil','Noto Sans',sans-serif;
+  }
+  input:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+  .advanced{ margin-top:4px; }
+  .advanced summary{ cursor:pointer; color:var(--lavender); font-size:13px; margin-bottom:12px; }
+
+  button{
+    width:100%; padding:15px; margin-top:8px;
+    background:linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color:#1c1c40; border:none; border-radius:3px;
+    font-weight:600; font-size:16px; letter-spacing:0.02em; cursor:pointer;
+    font-family:'Noto Sans Tamil','Noto Sans',sans-serif;
+  }
+  button:disabled{ opacity:0.6; cursor:wait; }
+  button:hover:not(:disabled){ filter:brightness(1.06); }
+
+  .status{ text-align:center; color:var(--lavender); font-size:14px; margin-top:14px; min-height:20px; }
+  .error{ color:#e08a8a; }
+
+  .results{ margin-top:36px; display:none; }
+  .results.show{ display:block; }
+
+  .result-head{ text-align:center; margin-bottom:28px; }
+  .result-head h2{ font-family:'Noto Serif Tamil',serif; font-size:26px; margin:0 0 4px; color:var(--gold-soft); }
+  .result-head p{ color:var(--lavender); font-size:14px; margin:0; }
+
+  .facts{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:32px; }
+  .fact{
+    background:#1c1c40; border:1px solid var(--line); border-radius:3px; padding:16px;
+  }
+  .fact .label{ font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--gold); letter-spacing:0.06em; text-transform:uppercase; }
+  .fact .value{ font-family:'Noto Serif Tamil',serif; font-size:19px; margin-top:6px; color:var(--leaf); }
+
+  /* South Indian style Rasi chart — signature element */
+  .rasi-wrap{ display:flex; flex-direction:column; align-items:center; margin:32px 0 40px; }
+  .rasi-title{ font-family:'Noto Serif Tamil',serif; color:var(--gold-soft); font-size:18px; margin-bottom:16px; }
+  .rasi-chart{
+    width:min(420px,100%); aspect-ratio:1; display:grid;
+    grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr);
+    border:1px solid var(--gold); background:#1c1c40;
+  }
+  .rasi-cell{
+    border:1px solid var(--line); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; padding:4px;
+    font-size:11px; color:var(--lavender); position:relative;
+  }
+  .rasi-cell .sign{ font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); position:absolute; top:4px; left:5px; }
+  .rasi-cell .planets{ font-family:'Noto Serif Tamil',serif; font-size:14px; color:var(--leaf); margin-top:8px; }
+  .rasi-center{ grid-column:2/4; grid-row:2/4; display:flex; align-items:center; justify-content:center; }
+  .rasi-center span{ font-family:'Noto Serif Tamil',serif; color:var(--copper); font-size:15px; }
+
+  details.raw{ margin-top:20px; }
+  details.raw summary{ cursor:pointer; color:var(--lavender); font-size:13px; }
+  pre{
+    background:#141430; border:1px solid var(--line); border-radius:3px;
+    padding:16px; overflow:auto; font-size:12px; color:var(--lavender); max-height:340px;
+  }
+
+  footer{ text-align:center; color:var(--lavender); font-size:12px; padding:20px; opacity:0.7; }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<header>
+  <div class="eyebrow">பிறப்பு ஜாதகம் · Vedic Kundli</div>
+  <h1>உங்கள் ஜாதகம்</h1>
+  <p>பிறந்த தேதி, நேரம், இடம் ஆகியவற்றைக் கொண்டு உங்கள் ராசி, நட்சத்திரம், லக்னம் மற்றும் கிரக நிலைகளைக் கணியுங்கள்.</p>
+</header>
+
+<main>
+  <form class="card" id="jathagam-form">
+    <div class="grid">
+      <div class="field">
+        <label for="name">பெயர் (விருப்பம்)</label>
+        <input type="text" id="name" placeholder="உங்கள் பெயர்">
+      </div>
+      <div class="field">
+        <label for="place">பிறந்த ஊர்</label>
+        <input type="text" id="place" placeholder="எ.கா. மதுரை, தமிழ்நாடு" required>
+      </div>
+      <div class="field">
+        <label for="date">பிறந்த தேதி</label>
+        <input type="date" id="date" required>
+      </div>
+      <div class="field">
+        <label for="time">பிறந்த நேரம்</label>
+        <input type="time" id="time" required>
+      </div>
+    </div>
+
+    <details class="advanced">
+      <summary>மேம்பட்ட அமைப்புகள் (UTC Offset)</summary>
+      <div class="field">
+        <label for="offset">நேர மண்டல ஆஃப்செட் (India = +05:30)</label>
+        <input type="text" id="offset" value="+05:30" placeholder="+05:30">
+      </div>
+    </details>
+
+    <button type="submit" id="submit-btn">ஜாதகம் கணிக்க</button>
+    <div class="status" id="status"></div>
+  </form>
+
+  <section class="results" id="results">
+    <div class="result-head">
+      <h2 id="result-name">ஜாதக பலன்</h2>
+      <p id="result-sub"></p>
+    </div>
+
+    <div class="facts" id="facts"></div>
+
+    <div class="rasi-wrap">
+      <div class="rasi-title">ராசி சக்கரம்</div>
+      <div class="rasi-chart" id="rasi-chart"></div>
+    </div>
+
+    <details class="raw">
+      <summary>முழு API தரவை (raw JSON) காண</summary>
+      <pre id="raw-json"></pre>
+    </details>
+  </section>
+</main>
+
+<footer>Powered by ProKerala Astrology API · Client credentials are kept server-side</footer>
+
+<script>
+// South Indian fixed-sign layout (12 signs around a 4x4 grid, center 2x2 empty)
+const SOUTH_INDIAN_LAYOUT = [
+  { sign: "மீனம்",   pos: [0,0] }, { sign: "மேஷம்",   pos: [0,1] }, { sign: "ரிஷபம்", pos: [0,2] }, { sign: "மிதுனம்", pos: [0,3] },
+  { sign: "கும்பம்", pos: [1,0] },                                                                     { sign: "கடகம்",  pos: [1,3] },
+  { sign: "மகரம்",   pos: [2,0] },                                                                     { sign: "சிம்மம்", pos: [2,3] },
+  { sign: "தனுசு",   pos: [3,0] }, { sign: "விருச்சிகம்", pos: [3,1] }, { sign: "துலாம்", pos: [3,2] }, { sign: "கன்னி",  pos: [3,3] }
+];
+
+function buildRasiChart(planetsBySign) {
+  const chart = document.getElementById('rasi-chart');
+  chart.innerHTML = '';
+  const grid = Array.from({length:4}, () => Array(4).fill(null));
+
+  SOUTH_INDIAN_LAYOUT.forEach(cell => {
+    const [r,c] = cell.pos;
+    grid[r][c] = cell.sign;
+  });
+
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (r >= 1 && r <= 2 && c >= 1 && c <= 2) {
+        if (r === 1 && c === 1) {
+          const center = document.createElement('div');
+          center.className = 'rasi-cell rasi-center';
+          center.innerHTML = '<span>ஜாதகம்</span>';
+          chart.appendChild(center);
+        }
+        continue;
+      }
+      const sign = grid[r][c];
+      const div = document.createElement('div');
+      div.className = 'rasi-cell';
+      const planets = (planetsBySign && planetsBySign[sign]) ? planetsBySign[sign].join(', ') : '';
+      div.innerHTML = `<span class="sign">${sign}</span><span class="planets">${planets}</span>`;
+      chart.appendChild(div);
+    }
+  }
+}
+
+function extractFacts(data) {
+  const facts = [];
+  const k = data.kundli || {};
+  const nested = k.data || k; // API sometimes wraps in { data: {...} }
+
+  const nakshatra = nested?.nakshatra_details?.nakshatra?.name || nested?.nakshatra?.name;
+  const rasi = nested?.nakshatra_details?.chandra_rasi?.name || nested?.chandra_rasi?.name;
+  const lagna = nested?.nakshatra_details?.soorya_rasi?.name || nested?.lagna?.name;
+  const yoga = nested?.yoga_details?.[0]?.name;
+
+  if (nakshatra) facts.push({ label: 'நட்சத்திரம்', value: nakshatra });
+  if (rasi) facts.push({ label: 'ராசி (சந்திர)', value: rasi });
+  if (lagna) facts.push({ label: 'லக்னம் / சூரிய ராசி', value: lagna });
+  if (yoga) facts.push({ label: 'யோகம்', value: yoga });
+  facts.push({ label: 'பிறந்த ஊர்', value: `${data.birth.place}` });
+  facts.push({ label: 'ஆயனாம்சம்', value: 'லாஹிரி (Lahiri)' });
+  return facts;
+}
+
+function extractPlanetsBySign(data) {
+  try {
+    const list = data.planetPosition?.data?.planet_position || data.planetPosition?.planet_position;
+    if (!Array.isArray(list)) return null;
+    const bySign = {};
+    list.forEach(p => {
+      const sign = p.rasi?.name || p.sign?.name;
+      const planetName = p.name;
+      if (!sign || !planetName) return;
+      bySign[sign] = bySign[sign] || [];
+      bySign[sign].push(planetName);
+    });
+    return bySign;
+  } catch { return null; }
+}
+
+document.getElementById('jathagam-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  const status = document.getElementById('status');
+  const results = document.getElementById('results');
+
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    place: document.getElementById('place').value.trim(),
+    date: document.getElementById('date').value,
+    time: document.getElementById('time').value,
+    utcOffset: document.getElementById('offset').value.trim() || '+05:30',
+  };
+
+  btn.disabled = true;
+  status.textContent = 'கணக்கிடுகிறது... சிறிது நேரம் காத்திருக்கவும்.';
+  status.className = 'status';
+  results.classList.remove('show');
+
+  try {
+    const res = await fetch('/api/horoscope', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'பிழை ஏற்பட்டது.');
+
+    document.getElementById('result-name').textContent = data.name ? `${data.name} — ஜாதக பலன்` : 'ஜாதக பலன்';
+    document.getElementById('result-sub').textContent =
+      `${data.birth.date} · ${data.birth.time} · ${data.birth.place}`;
+
+    const facts = extractFacts(data);
+    document.getElementById('facts').innerHTML = facts.map(f =>
+      `<div class="fact"><div class="label">${f.label}</div><div class="value">${f.value}</div></div>`
+    ).join('');
+
+    buildRasiChart(extractPlanetsBySign(data));
+
+    document.getElementById('raw-json').textContent = JSON.stringify(data, null, 2);
+
+    results.classList.add('show');
+    status.textContent = '';
+  } catch (err) {
+    status.textContent = err.message;
+    status.className = 'status error';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
